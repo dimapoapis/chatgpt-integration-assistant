@@ -38,6 +38,5 @@ jobs:
           git config --local user.name "GitHub Action"
           git add 24SevenOfficeAPI.json
           git commit -m "Update 24SevenOffice API documentation"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+
