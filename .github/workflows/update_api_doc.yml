@@ -17,11 +17,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Skip workflow if the committer is GitHub Actions
-      - name: Skip if committed by GitHub Actions
+      # Skip workflow if the commit was made by GitHub Actions bot
+      - name: Skip if committed by GitHub Actions bot
         run: |
-          if [ "$(git log -1 --pretty=%B)" = "Update 24SevenOffice API documentation" ]; then
-            echo "Workflow triggered by a GitHub Actions commit, exiting..."
+          COMMITTER=$(git log -1 --pretty=format:'%an')
+          if [ "$COMMITTER" = "github-actions[bot]" ]; then
+            echo "Workflow triggered by github-actions[bot], exiting..."
             exit 0
           fi
 
