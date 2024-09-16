@@ -13,52 +13,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Ensure the workflow doesn't run on its own commits
-      - name: Check commit author
-        id: check_author
+      # Skip workflow if the committer is GitHub Actions
+      - name: Skip if committed by GitHub Actions
         run: |
-          AUTHOR_NAME=$(git log -1 --pretty=format:'%an')
-          if [[ "$AUTHOR_NAME" == "GitHub Action" ]]; then
-            echo "This commit was made by GitHub Actions. Skipping."
+          if [ "$(git log -1 --pretty=%B)" = "Update 24SevenOffice API documentation" ]; then
+            echo "Workflow triggered by a GitHub Actions commit, exiting..."
             exit 0
           fi
 
-      # Step 3: Set up environment with GITHUB_TOKEN
+      # Set GITHUB_TOKEN as an environment variable so it's accessible in the Python script
       - name: Set up environment with GITHUB_TOKEN
         run: echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      # Step 4: Set up Python environment
+      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      # Step 5: Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Step 6: Run the update_api_doc.py script
+      # Run the update_api_doc.py script
       - name: Run Python script and update API Documentation
         run: python update_api_doc.py
 
-      # Step 7: Check for changes in the 24SevenOfficeAPI.json file
+      # Check if there are changes in the 24SevenOfficeAPI.json file
       - name: Check for changes
         id: check_changes
         run: |
           git fetch
           git diff --exit-code 24SevenOfficeAPI.json || echo "has_changes=true" >> $GITHUB_ENV
 
-      # Step 8: Commit and push updated API documentation (only if there are changes)
+      # Commit and push the updated API documentation (24SevenOfficeAPI.json) to the repository if changes exist
       - name: Commit updated API documentation
         if: env.has_changes == 'true'
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add 24SevenOfficeAPI.json
-          git commit -m "Update 24SevenOffice API
+          git commit -m "Update 24SevenOffice API documentation"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
