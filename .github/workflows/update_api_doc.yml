@@ -10,21 +10,13 @@ on:
 
 jobs:
   update-api-doc:
+    if: github.actor != 'github-actions[bot]'  # Prevent the workflow from running if triggered by github-actions[bot]
     runs-on: ubuntu-latest
 
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      # Skip workflow if the commit was made by GitHub Actions bot
-      - name: Skip if committed by GitHub Actions bot
-        run: |
-          COMMITTER=$(git log -1 --pretty=format:'%an')
-          if [ "$COMMITTER" = "github-actions[bot]" ]; then
-            echo "Workflow triggered by github-actions[bot], exiting..."
-            exit 0
-          fi
 
       # Set GITHUB_TOKEN as an environment variable so it's accessible in the Python script
       - name: Set up environment with GITHUB_TOKEN
