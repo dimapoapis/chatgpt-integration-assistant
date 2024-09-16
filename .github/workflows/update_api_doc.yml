@@ -4,46 +4,44 @@ on:
   schedule:
     - cron: '0 0 * * *'  # Runs daily at midnight UTC
   workflow_dispatch:  # Allows for manual triggering
+  push:
+    branches:
+      - main
+    paths-ignore:  # Ignore changes that the workflow itself commits
+      - "24SevenOfficeAPI.json"  # This prevents the workflow from triggering on this file
 
 jobs:
   update-api-doc:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Set GITHUB_TOKEN as an environment variable so it's accessible in the Python script
       - name: Set up environment with GITHUB_TOKEN
         run: echo "GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
 
-      # Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Run the update_api_doc.py script
       - name: Run Python script and update API Documentation
         run: python update_api_doc.py
 
-      # Check if there are changes in the 24SevenOfficeAPI.json file
       - name: Check for changes
-        id: check_changes  # Set an ID for referencing in the commit step
+        id: check_changes
         run: |
           git fetch
           git diff --exit-code 24SevenOfficeAPI.json || echo "has_changes=true" >> $GITHUB_ENV
 
-      # Commit and push the updated API documentation (24SevenOfficeAPI.json) to the repository if changes exist
       - name: Commit updated API documentation
-        if: env.has_changes == 'true'  # Only run this step if there are changes
+        if: env.has_changes == 'true'
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
