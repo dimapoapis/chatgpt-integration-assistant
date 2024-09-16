@@ -32,15 +32,21 @@ jobs:
 
       # Run the update_api_doc.py script
       - name: Run Python script and update API Documentation
-        run: |
-          python update_api_doc.py
+        run: python update_api_doc.py
 
-      # Commit and push the updated API documentation (24SevenOfficeAPI.json) to the repository
+      # Check if there are changes in the 24SevenOfficeAPI.json file
+      - name: Check for changes
+        id: check_changes  # Set an ID for referencing in the commit step
+        run: |
+          git fetch
+          git diff --exit-code 24SevenOfficeAPI.json || echo "has_changes=true" >> $GITHUB_ENV
+
+      # Commit and push the updated API documentation (24SevenOfficeAPI.json) to the repository if changes exist
       - name: Commit updated API documentation
+        if: env.has_changes == 'true'  # Only run this step if there are changes
         run: |
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
           git add 24SevenOfficeAPI.json
           git commit -m "Update 24SevenOffice API documentation"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
-
