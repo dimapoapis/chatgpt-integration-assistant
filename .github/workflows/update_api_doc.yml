@@ -31,7 +31,7 @@ jobs:
         run: |
           python update_api_doc.py
 
-      # Commit and push the updated API documentation to the repository
+      # Commit and push the updated API documentation (24SevenOfficeAPI.json) to the repository
       - name: Commit updated API documentation
         run: |
           git config --local user.email "actions@github.com"
@@ -39,3 +39,5 @@ jobs:
           git add 24SevenOfficeAPI.json
           git commit -m "Update 24SevenOffice API documentation"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
